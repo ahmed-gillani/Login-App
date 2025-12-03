@@ -1,0 +1,89 @@
+// src/components/PoliciesTable.jsx
+import React, { useState, useEffect, useRef } from "react";
+import api from "../api/axios";
+
+export default function PoliciesTable() {
+  const [policies, setPolicies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Ref to prevent double fetch in React 18 StrictMode
+  const didFetch = useRef(false);
+
+  const fetchPolicies = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log("Fetching policies...");
+      const res = await api.get("/api/policies/");
+      const data = res.data;
+
+      console.log("API data:", data); // debug
+
+      // Handle both plain array and paginated object
+      const dataArray = Array.isArray(data) ? data : data.results ?? [];
+
+      const trimmed = dataArray.map((p) => ({
+        id: p.id,
+        title: p.title,
+        categoryName: p.category?.name ?? "-",
+      }));
+
+      setPolicies(trimmed);
+    } catch (err) {
+      console.error("Full error object:", err);
+      if (err?.response) {
+        console.log("Error response data:", err.response.data);
+        setError(
+          `HTTP ${err.response.status} - ${err.response.statusText || ""} - Check if /api/policies/ exists`
+        );
+      } else {
+        setError(err?.message || "Failed to fetch policies");
+      }
+      setPolicies([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Automatically fetch policies on mount (React 18 safe)
+  useEffect(() => {
+    if (!didFetch.current) {
+      fetchPolicies();
+      didFetch.current = true;
+    }
+  }, []);
+
+  return (
+    <div className="p-4">
+      {error && <div className="mb-3 text-sm text-red-600">Error: {error}</div>}
+      {loading && <div className="text-sm text-gray-600">Loading…</div>}
+      {!loading && policies.length === 0 && !error && (
+        <div className="text-sm text-gray-600">No policies found.</div>
+      )}
+
+      {policies.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse bg-white rounded-lg">
+            <thead className="bg-gray-100 text-gray-700">
+              <tr className="text-left">
+                <th className="border-b py-2 px-3">ID</th>
+                <th className="border-b py-2 px-3">Title</th>
+                <th className="border-b py-2 px-3">Category</th>
+              </tr>
+            </thead>
+            <tbody>
+              {policies.map((p) => (
+                <tr key={p.id} className="odd:bg-white even:bg-gray-50">
+                  <td className="py-2 px-3 align-top">{p.id}</td>
+                  <td className="py-2 px-3 align-top">{p.title}</td>
+                  <td className="py-2 px-3 align-top">{p.categoryName}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
