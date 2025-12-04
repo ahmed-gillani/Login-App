@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import MessageList from "../components/MessageList";
 import Footer from "../components/Footer";
+import { sendChatMessage } from "../api/chatApi";
 
 export default function ChatBot() {
     const [messages, setMessages] = useState([]);
@@ -17,11 +18,30 @@ export default function ChatBot() {
         setMessages((prev) => [...prev, userMsg]);
         setIsThinking(true);
 
-        setTimeout(() => {
-            const botResponse = { id: Date.now() + 1, role: "assistant", text: `Echo: ${text}` };
-            setMessages((prev) => [...prev, botResponse]);
+        const botMsgId = Date.now() + 1;
+        const botMsg = { id: botMsgId, role: "assistant", text: "" };
+        setMessages((prev) => [...prev, botMsg]);
+
+        try {
+            await sendChatMessage(text, (streamedText) => {
+                // Update bot message in real-time as chunks arrive
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg.id === botMsgId ? { ...msg, text: streamedText } : msg
+                    )
+                );
+            });
+        } catch (error) {
+            const errorMsg = {
+                id: Date.now() + 1,
+                role: "assistant",
+                text: "Error: Unable to connect to the API. Please try again.",
+            };
+            setMessages((prev) => [...prev, errorMsg]);
+            console.error("Error sending message:", error);
+        } finally {
             setIsThinking(false);
-        }, 900);
+        }
     };
 
     return (

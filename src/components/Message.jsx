@@ -19,7 +19,7 @@ export default function Message({ role, content }) {
 
   return (
     <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"} px-4 py-2`}>
-      <div className="flex max-w-[90%] md:max-w-[760px] gap-3 items-start">
+      <div className={`flex max-w-[90%] md:max-w-[760px] gap-3 items-start ${isUser ? "flex-row-reverse" : ""}`}>
         {/* Avatar */}
         {!isUser ? (
           <div className="w-10 h-10 rounded-md bg-gray-800 text-white flex items-center justify-center font-bold">GPT</div>
@@ -28,7 +28,7 @@ export default function Message({ role, content }) {
         )}
 
         {/* Bubble */}
-        <div className={`${isUser ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white" : "bg-white/90 border border-white/30 backdrop-blur"} rounded-2xl px-4 py-3 shadow-sm prose prose-sm max-w-full`}>
+        <div className={`${isUser ? "bg-linear-to-br from-blue-600 to-indigo-600 text-white" : "bg-white/90 border border-white/30 backdrop-blur"} rounded-2xl px-4 py-3 shadow-sm prose prose-sm max-w-full`}>
           <div className="flex justify-end -mt-2 -mr-2">
             {!isUser && (
               <button onClick={handleCopy} className="p-1 rounded text-gray-500 hover:bg-gray-100/60">

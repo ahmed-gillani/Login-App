@@ -9,8 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState("admin123");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-    const [showPassword, setShowPassword] = useState(false); // <-- added
-
+  const [showPassword, setShowPassword] = useState(false); // <-- added
 
   const navigate = useNavigate();
   const { setUser } = useContext(AuthContext);
@@ -55,7 +54,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 via-purple-600 to-pink-500 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-700 via-purple-600 to-pink-500 p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-2xl p-10 sm:p-12">
           <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-2">
@@ -105,7 +104,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 rounded-xl hover:shadow-xl transform hover:scale-105 transition duration-300 disabled:opacity-70"
+              className="w-full bg-linear-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 rounded-xl hover:shadow-xl transform hover:scale-105 transition duration-300 disabled:opacity-70"
             >
               {loading ? "Logging in..." : "Login as Portal Admin"}
             </button>
