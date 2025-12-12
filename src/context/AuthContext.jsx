@@ -10,26 +10,28 @@ export default function AuthProvider({ children }) {
   );
 
   const logout = () => {
-    try {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("user");
-    } catch (e) {}
-
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
     setUser(null);
     window.location.href = "/login";
   };
 
-  // NEW COOKIE-BASED REFRESH
   const refreshToken = async () => {
     try {
-      console.log("[refreshToken] Calling /api/users/refresh/");
+      const refresh = localStorage.getItem("refresh_token");
+      if (!refresh) {
+        logout();
+        return null;
+      }
 
-      // ⬇⬇⬇ EMPTY BODY – refresh token comes from HttpOnly cookie
-      // Ensure we send cookies (HttpOnly refresh cookie)
-      const res = await api.post("/api/users/refresh/", {}, { withCredentials: true });
+      console.log("[refreshToken] Sending refresh:", refresh);
 
-      console.log("[refreshToken] response:", res.data);
+      const res = await api.post("/api/users/refresh/", {
+        refresh: refresh,      // ✅ your backend requires this
+      });
+
+      console.log("[refreshToken] Response:", res.data);
 
       if (res?.data?.access) {
         localStorage.setItem("access_token", res.data.access);
@@ -38,10 +40,7 @@ export default function AuthProvider({ children }) {
 
       return null;
     } catch (err) {
-      console.error(
-        "[refreshToken] failed:",
-        err?.response?.data || err?.message
-      );
+      console.error("[refreshToken ERROR]:", err?.response?.data || err);
       logout();
       return null;
     }
@@ -51,21 +50,19 @@ export default function AuthProvider({ children }) {
     const interceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        const originalRequest = error.config;
+        const original = error.config;
 
-        if (!originalRequest) return Promise.reject(error);
-        if (originalRequest._retry) return Promise.reject(error);
+        if (!original || original._retry) return Promise.reject(error);
 
         if (error.response?.status === 401) {
-          console.warn("401 detected → trying refresh");
+          console.log("401 detected — refreshing access token...");
+          original._retry = true;
 
-          originalRequest._retry = true;
           const newAccess = await refreshToken();
-
           if (newAccess) {
-            originalRequest.headers = originalRequest.headers || {};
-            originalRequest.headers["Authorization"] = `Bearer ${newAccess}`;
-            return api(originalRequest);
+            original.headers = original.headers || {};
+            original.headers["Authorization"] = `Bearer ${newAccess}`;
+            return api(original);
           }
         }
 
@@ -73,9 +70,7 @@ export default function AuthProvider({ children }) {
       }
     );
 
-    return () => {
-      api.interceptors.response.eject(interceptor);
-    };
+    return () => api.interceptors.response.eject(interceptor);
   }, []);
 
   return (

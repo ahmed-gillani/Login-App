@@ -12,37 +12,53 @@ export default function ChatBot() {
     const [isThinking, setIsThinking] = useState(false);
 
     const navigate = useNavigate();  // 🔹 Navigator
+const handleSend = async (text) => {
+    const userMsg = { id: Date.now(), role: "user", text };
+    setMessages((prev) => [...prev, userMsg]);
+    setIsThinking(true);
 
-    const handleSend = async (text) => {
-        const userMsg = { id: Date.now(), role: "user", text };
-        setMessages((prev) => [...prev, userMsg]);
-        setIsThinking(true);
+    let botMessageId = null;
+    let buffer = "";
 
-        const botMsgId = Date.now() + 1;
-        const botMsg = { id: botMsgId, role: "assistant", text: "" };
-        setMessages((prev) => [...prev, botMsg]);
+    try {
+        await sendChatMessage(text, (chunk) => {
 
-        try {
-            await sendChatMessage(text, (streamedText) => {
-                // Update bot message in real-time as chunks arrive
-                setMessages((prev) =>
-                    prev.map((msg) =>
-                        msg.id === botMsgId ? { ...msg, text: streamedText } : msg
-                    )
-                );
-            });
-        } catch (error) {
-            const errorMsg = {
-                id: Date.now() + 1,
-                role: "assistant",
-                text: "Error: Unable to connect to the API. Please try again.",
-            };
-            setMessages((prev) => [...prev, errorMsg]);
-            console.error("Error sending message:", error);
-        } finally {
-            setIsThinking(false);
-        }
-    };
+            if (!chunk || chunk.trim() === "") return;
+
+            // Create GPT bubble ONLY when first chunk arrives
+            if (!botMessageId) {
+                botMessageId = Date.now() + 1;
+                setMessages((prev) => [
+                    ...prev,
+                    { id: botMessageId, role: "assistant", text: "" }
+                ]);
+            }
+
+            // Append chunk to full text
+            buffer = chunk;
+
+            // Update GPT bubble with cleaned text
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === botMessageId ? { ...msg, text: buffer } : msg
+                )
+            );
+        });
+
+    } catch (error) {
+        const errorMsg = {
+            id: Date.now() + 100,
+            role: "assistant",
+            text: "Error: Unable to connect to the API. Please try again.",
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+        console.error("Streaming error:", error);
+
+    } finally {
+        setIsThinking(false);
+    }
+};
+
 
     return (
         <div className="flex h-screen bg-slate-50">

@@ -2,4 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optional: Add any global styles here */
+html {
+  color-scheme: light dark;
+}
