@@ -24,10 +24,6 @@ export default function MessageList({ messages = [], isThinking = false }) {
             <Message key={m.id} role={m.role} content={m.text ?? m.content ?? ""} />
           ))}
 
-          {isThinking && (
-            <Message role="assistant" content="Typing…" />
-          )}
-
           <div ref={bottomRef} />
         </div>
       </div>

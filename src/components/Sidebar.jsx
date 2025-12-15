@@ -110,10 +110,12 @@ export default function Sidebar({
         {/* Menu */}
         <div className="p-3 space-y-1">
           <SidebarItem
+            key="search"
             icon={<Search size={18} />}
             label="Search"
             onClick={() => onSelectOption("search")}
           />
+
           <SidebarItem
             icon={<BookOpen size={18} />}
             label="Library"
@@ -130,20 +132,17 @@ export default function Sidebar({
         <div className="flex-1 overflow-y-auto px-3 mt-2 space-y-2">
           {conversations.map((conv) => (
             <div
-              key={conv.id}
-              onClick={() => {
-                onSelect(conv.id);
-                setOpenMobile(false);
-              }}
+              key={conv.id || `chat-${conv.createdAt}`}
+              onClick={() => conv?.id && onSelect(conv.id)}
               className={`
-                flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition 
-                ${
-                  conv.id === activeId
-                    ? "bg-blue-100 border border-blue-300 dark:bg-blue-900/40 dark:border-blue-700"
-                    : "hover:bg-slate-200 dark:hover:bg-slate-800"
+      flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition 
+      ${conv.id === activeId
+                  ? "bg-blue-100 border border-blue-300 dark:bg-blue-900/40 dark:border-blue-700"
+                  : "hover:bg-slate-200 dark:hover:bg-slate-800"
                 }
-              `}
+    `}
             >
+
               <div className="flex items-center gap-3">
                 <MessageSquare size={16} className="text-slate-600 dark:text-slate-300" />
                 <span className="text-sm text-slate-800 dark:text-slate-300 truncate">

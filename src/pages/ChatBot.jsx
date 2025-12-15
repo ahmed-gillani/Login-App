@@ -1,97 +1,136 @@
-// src/pages/ChatBot.jsx
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";    // 🔹 ADD THIS
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import MessageList from "../components/MessageList";
 import Footer from "../components/Footer";
 import { sendChatMessage } from "../api/chatApi";
+import {
+    getChats,
+    createChat,
+    updateChat,
+    deleteChat,
+} from "../utils/chatStorage";
+import { generateChatTitle } from "../utils/chatTitle";
 
 export default function ChatBot() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const [conversations, setConversations] = useState([]);
+    const [activeId, setActiveId] = useState(null);
     const [messages, setMessages] = useState([]);
     const [isThinking, setIsThinking] = useState(false);
 
-    const navigate = useNavigate();  // 🔹 Navigator
-const handleSend = async (text) => {
-    const userMsg = { id: Date.now(), role: "user", text };
-    setMessages((prev) => [...prev, userMsg]);
-    setIsThinking(true);
+    // 🔹 Load chats on mount / URL change
+    useEffect(() => {
+        const chats = getChats();
 
-    let botMessageId = null;
-    let buffer = "";
+        // ✅ Only create chat if NO chat exists at all
+        if (!id) {
+            const ids = Object.keys(chats);
 
-    try {
-        await sendChatMessage(text, (chunk) => {
-
-            if (!chunk || chunk.trim() === "") return;
-
-            // Create GPT bubble ONLY when first chunk arrives
-            if (!botMessageId) {
-                botMessageId = Date.now() + 1;
-                setMessages((prev) => [
-                    ...prev,
-                    { id: botMessageId, role: "assistant", text: "" }
-                ]);
+            if (ids.length === 0) {
+                const newId = createChat();
+                navigate(`/chatbot/${newId}`, { replace: true });
+            } else {
+                navigate(`/chatbot/${ids[0]}`, { replace: true });
             }
+            return;
+        }
 
-            // Append chunk to full text
-            buffer = chunk;
+        if (!chats[id]) return;
 
-            // Update GPT bubble with cleaned text
-            setMessages((prev) =>
-                prev.map((msg) =>
-                    msg.id === botMessageId ? { ...msg, text: buffer } : msg
-                )
-            );
-        });
+        setActiveId(id);
+        setMessages(chats[id].messages);
+        setConversations(
+            Object.values(chats).filter((c) => c?.id)
+        );
+    }, [id]);
 
-    } catch (error) {
-        const errorMsg = {
-            id: Date.now() + 100,
-            role: "assistant",
-            text: "Error: Unable to connect to the API. Please try again.",
-        };
-        setMessages((prev) => [...prev, errorMsg]);
-        console.error("Streaming error:", error);
 
-    } finally {
-        setIsThinking(false);
-    }
-};
+    // 🔹 Send message
+    const handleSend = async (text) => {
+        if (!activeId) return;
 
+        const chats = getChats();
+        const chat = chats[activeId];
+
+        const userMsg = { id: Date.now(), role: "user", text };
+        chat.messages.push(userMsg);
+
+        // Set title from first message
+        if (chat.messages.length === 1) {
+            chat.title = generateChatTitle(text);
+        }
+
+        updateChat(activeId, chat);
+        setMessages([...chat.messages]);
+        setIsThinking(true);
+
+        let botId = Date.now() + 1;
+
+        try {
+            await sendChatMessage(text, (chunk) => {
+                const chats = getChats();
+                const chat = chats[activeId];
+
+                let botMsg = chat.messages.find((m) => m.id === botId);
+                if (!botMsg) {
+                    botMsg = { id: botId, role: "assistant", text: "" };
+                    chat.messages.push(botMsg);
+                }
+
+                botMsg.text = chunk;
+                updateChat(activeId, chat);
+                setMessages([...chat.messages]);
+            });
+        } finally {
+            setIsThinking(false);
+        }
+    };
+
+    // 🔹 New chat
+    const handleNewChat = () => {
+        const newId = createChat();
+        navigate(`/chatbot/${newId}`);
+    };
+
+    // 🔹 Delete chat
+    const handleDelete = (cid) => {
+        deleteChat(cid);
+        const chats = getChats();
+        const ids = Object.keys(chats);
+
+        if (cid === activeId) {
+            if (ids.length === 0) {
+                const newId = createChat();
+                navigate(`/chatbot/${newId}`, { replace: true });
+            } else {
+                navigate(`/chatbot/${ids[0]}`, { replace: true });
+            }
+        }
+
+        setConversations(
+            Object.values(chats).filter((c) => c?.id)
+        );
+    };
 
     return (
-        <div className="flex h-screen bg-slate-50">
-
-            {/* 🔙 BACK BUTTON  */}
-            {/* Floating Back Button (TOP-LEFT) */}
-            <button
-                onClick={() => navigate("/dashboard")}
-                className="absolute top-4 left-4 z-50 
-             bg-gray-900 text-white w-11 h-11 rounded-full 
-             flex items-center justify-center text-lg shadow-lg
-             hover:bg-gray-800 active:scale-95 duration-150">
-                ←
-            </button>
-
-
+        <div className="flex h-screen">
             <Sidebar
-                conversations={[]}
-                activeId={null}
-                onSelect={() => { }}
-                onNewChat={() => setMessages([])}
-                onDelete={() => { }}
+                conversations={conversations}
+                activeId={activeId}
+                onSelect={(cid) => navigate(`/chatbot/${cid}`)}
+                onNewChat={handleNewChat}
+                onDelete={handleDelete}
                 onSelectOption={() => { }}
             />
 
             <div className="flex flex-col flex-1">
-                <Header />
-                <div className="flex-1 overflow-hidden flex flex-col items-center">
-                    <div className="w-full max-w-4xl h-full flex flex-col">
-                        <MessageList messages={messages} isThinking={isThinking} />
-                        <Footer onSend={handleSend} isStreaming={isThinking} />
-                    </div>
-                </div>
+                <Header title={conversations.find(c => c.id === activeId)?.title} />
+                <MessageList messages={messages} isThinking={isThinking} />
+                <Footer onSend={handleSend} isStreaming={isThinking} />
             </div>
         </div>
     );
