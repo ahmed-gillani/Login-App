@@ -1,21 +1,41 @@
-<<<<<<< HEAD
-# React + Vite
+# 🔐 Login App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern and responsive **Login Application** built using **React**.  
+This project demonstrates clean UI design, form handling, and basic authentication flow suitable for real-world applications.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Project Overview
 
-## React Compiler
+The Login App provides a simple and user-friendly login interface.  
+It focuses on frontend best practices, component-based architecture, and responsive styling.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This project is ideal for:
+- Learning React fundamentals
+- Showcasing authentication UI
+- Adding to a developer portfolio
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# Login-API
-A modern web-based Facility Management System built with React, Tailwind CSS, and Vite. This portal allows admin users to log in securely, view dashboard statistics, and access protected API endpoints.
->>>>>>> 4352bc2ede26e67c95f085002650597ded4c5d88
+## ✨ Features
+
+- ✅ Modern and clean UI
+- ✅ Responsive design (mobile & desktop)
+- ✅ Email & password input validation
+- ✅ Reusable React components
+- ✅ Easy to extend with backend APIs
+- ✅ Clean folder structure
+
+---
+
+## 🛠️ Tech Stack
+
+- **React**
+- **JavaScript (ES6+)**
+- **CSS / Tailwind CSS** (if used)
+- **Vite / CRA** (depending on setup)
+
+---
+
+## 📂 Project Structure
+
