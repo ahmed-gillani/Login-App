@@ -1,17 +1,10 @@
 // src/pages/Dashboard.jsx
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { FaUser, FaBuilding, FaUserShield, FaChartLine } from "react-icons/fa";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
+import { FaUser, FaBuilding, FaUserShield, FaChartLine, FaHome, FaRobot } from "react-icons/fa";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import Dropdown from "../components/Dropdown";
 
 export default function Dashboard() {
   const { user, setUser } = useContext(AuthContext);
@@ -60,20 +53,16 @@ export default function Dashboard() {
           </div>
 
           <div className="flex gap-4 mt-4 sm:mt-0">
-            <button
-              onClick={() => navigate("/policies")}
-              className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition transform hover:scale-105"
-            >
-              Policies API
-            </button>
+            {/* Navigate Dropdown */}
+            <Dropdown
+              label="Dropdown Policies/ChatBot"
+              items={[
+                { label: "Policies API", onClick: () => navigate("/policies"), icon: <FaHome /> },
+                { label: "ChatBot", onClick: () => navigate("/chatbot"), icon: <FaRobot /> },
+              ]}
+            />
 
-            <button
-              onClick={() => navigate("/chatbot")}  // ← OPEN CHATBOT
-              className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-md transition transform hover:scale-105"
-            >
-              ChatBot
-            </button>
-
+            {/* Logout Button */}
             <button
               onClick={logout}
               className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md transition transform hover:scale-105"

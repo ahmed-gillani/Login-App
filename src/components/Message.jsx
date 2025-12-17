@@ -9,13 +9,11 @@ export default function Message({ role, content, isThinking = false }) {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
 
-  // 🔹 CLEAN & NORMALIZE TEXT
  function cleanText(input) {
   if (!input) return "";
 
   let text = input;
 
-  // Remove streaming junk
   text = text.replace(/data:\s*/gi, "");
 
   // Fix abbreviations
@@ -36,16 +34,13 @@ export default function Message({ role, content, isThinking = false }) {
     text = text.replace(r, v);
   });
 
-  // ✅ Fix broken hyphenated words (post - acute → post-acute)
   text = text.replace(/(\w)\s*-\s*(\w)/g, "$1-$2");
 
-  // ✅ Ensure space after comma
   text = text.replace(/,([^\s])/g, ", $1");
 
-  // ✅ ONLY convert ".-" into bullet point
   text = text.replace(/\.\s*-\s*/g, ".\n\n• ");
 
-  // ✅ Clean extra spaces
+  
   text = text
     .split("\n")
     .map(line => line.trim())

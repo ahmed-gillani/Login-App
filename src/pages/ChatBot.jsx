@@ -24,29 +24,29 @@ export default function ChatBot() {
 
     // 🔹 Load chats on mount / URL change
     useEffect(() => {
-        const chats = getChats();
+  const chats = getChats();
 
-        // ✅ Only create chat if NO chat exists at all
-        if (!id) {
-            const ids = Object.keys(chats);
+  // ✅ Only create chat if NO chat exists at all
+  if (!id) {
+    const ids = Object.keys(chats);
 
-            if (ids.length === 0) {
-                const newId = createChat();
-                navigate(`/chatbot/${newId}`, { replace: true });
-            } else {
-                navigate(`/chatbot/${ids[0]}`, { replace: true });
-            }
-            return;
-        }
+    if (ids.length === 0) {
+      const newId = createChat();
+      navigate(`/chatbot/${newId}`, { replace: true });
+    } else {
+      navigate(`/chatbot/${ids[0]}`, { replace: true });
+    }
+    return;
+  }
 
-        if (!chats[id]) return;
+  if (!chats[id]) return;
 
-        setActiveId(id);
-        setMessages(chats[id].messages);
-        setConversations(
-            Object.values(chats).filter((c) => c?.id)
-        );
-    }, [id]);
+  setActiveId(id);
+  setMessages(chats[id].messages);
+  setConversations(
+    Object.values(chats).filter((c) => c?.id)
+  );
+}, [id]);
 
 
     // 🔹 Send message

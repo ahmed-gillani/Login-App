@@ -6,7 +6,7 @@ const FACILITY_ID = "t2y4sv_0954198_YRPC0QP";
 const api = axios.create({
   baseURL: "https://3-149-121-205.nip.io",
   timeout: 15000,
-  withCredentials: true, // ⬅⬅⬅ REQUIRED FOR COOKIE REFRESH TOKEN
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     "X-Facility-Id": FACILITY_ID,
