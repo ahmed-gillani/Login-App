@@ -1,21 +1,57 @@
-<<<<<<< HEAD
-# React + Vite
+# 🔐 Login App — React Authentication & API Integration
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Login-App** is a modern and responsive **React.js application** that provides user login and interaction features.  
+It integrates with external APIs for chatbot and backend services, and also demonstrates clean UI design and frontend logic.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📌 Project Overview
 
-## React Compiler
+This project is a React‑based login interface that:
+- Uses APIs for dynamic interaction (e.g., chatbot backend)
+- Handles user login functionality
+- Demonstrates clean component architecture and responsive UI
+- Serves as a beginner‑friendly example of frontend API integration
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## ✨ Key Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# Login-API
-A modern web-based Facility Management System built with React, Tailwind CSS, and Vite. This portal allows admin users to log in securely, view dashboard statistics, and access protected API endpoints.
->>>>>>> 4352bc2ede26e67c95f085002650597ded4c5d88
+✔ Modern and clean login UI  
+✔ Responsive design (mobile & desktop)  
+✔ Email & password input validation  
+✔ API integration for backend & chatbot communication  
+✔ Reusable React components  
+✔ Easy to extend with additional features
+
+---
+
+## 🌐 API Integration
+
+This project communicates with the following APIs:
+
+### 🤖 Chatbot API  
+https://3-133-101-97.nip.io/chatbot"
+
+## Login API
+"https://3-149-121-205.nip.io"
+
+
+
+These are used for:
+- Sending requests to the chatbot backend
+- Fetching or processing user data (as needed)
+
+> 🎯 You should configure these in an environment file if you don’t want values hard‑coded.
+
+---
+
+## 🛠️ Tech Stack
+
+- **React.js**
+- **JavaScript (ES6+)**
+- **Tailwind CSS** 
+- **REST APIs**
+- **localStorage** (optional for client‑side persistence)
+
+---
