@@ -16,19 +16,33 @@ export default function Dropdown({ label = "Menu", items = [], icon }) {
   }, []);
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
+      {/* Dropdown button */}
       <button
         onClick={() => setOpen(!open)}
-        className="inline-flex items-center justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none gap-2"
+        className="
+          w-56 h-11
+          flex items-center justify-between
+          px-4
+          rounded-lg
+          bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500
+          text-white font-semibold
+          shadow
+          hover:scale-105
+          transition-transform
+        "
       >
-        {icon && <span className="text-gray-500">{icon}</span>}
-        {label}
+        <span className="flex items-center gap-2">
+          {icon && <span>{icon}</span>}
+          {label}
+        </span>
+
+        {/* Arrow */}
         <svg
-          className="ml-2 -mr-1 h-5 w-5"
+          className="h-4 w-4"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
-          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -38,36 +52,47 @@ export default function Dropdown({ label = "Menu", items = [], icon }) {
         </svg>
       </button>
 
+      {/* Dropdown menu */}
       {open && (
-        <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 origin-top-right transition-transform transform scale-95 opacity-0 animate-dropdown">
+        <div
+          className="
+            absolute right-0 mt-2
+            w-56
+            bg-white
+            rounded-lg
+            shadow-lg
+            z-50
+            ring-1 ring-black ring-opacity-5
+          "
+        >
           <ul className="py-1">
             {items.map((item, index) => (
               <li
                 key={index}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
                 onClick={() => {
                   item.onClick && item.onClick();
                   setOpen(false);
                 }}
+                className="
+                  flex items-center gap-3
+                  px-4 py-2
+                  text-gray-800
+                  hover:bg-indigo-100
+                  cursor-pointer
+                  transition
+                "
               >
+                {item.icon && (
+                  <span className="text-indigo-500">
+                    {item.icon}
+                  </span>
+                )}
                 {item.label}
               </li>
             ))}
           </ul>
         </div>
       )}
-
-      <style>
-        {`
-          @keyframes dropdown {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-          }
-          .animate-dropdown {
-            animation: dropdown 0.15s ease-out forwards;
-          }
-        `}
-      </style>
     </div>
   );
 }

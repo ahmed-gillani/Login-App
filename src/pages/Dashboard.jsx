@@ -2,21 +2,28 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { FaUser, FaBuilding, FaUserShield, FaChartLine, FaHome, FaRobot } from "react-icons/fa";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  FaUser,
+  FaBuilding,
+  FaUserShield,
+  FaChartLine,
+  FaHome,
+  FaRobot,
+} from "react-icons/fa";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import Dropdown from "../components/Dropdown";
 
 export default function Dashboard() {
-  const { user, setUser } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login", { replace: true });
-  };
 
   const data = [
     { name: "Jan", apiCalls: 30 },
@@ -55,14 +62,22 @@ export default function Dashboard() {
           <div className="flex gap-4 mt-4 sm:mt-0">
             {/* Navigate Dropdown */}
             <Dropdown
-              label="Dropdown Policies/ChatBot"
+              label="Navigate"
               items={[
-                { label: "Policies API", onClick: () => navigate("/policies"), icon: <FaHome /> },
-                { label: "ChatBot", onClick: () => navigate("/chatbot"), icon: <FaRobot /> },
+                {
+                  label: "Policies API",
+                  onClick: () => navigate("/policies"),
+                  icon: <FaHome />,
+                },
+                {
+                  label: "ChatBot",
+                  onClick: () => navigate("/chatbot"),
+                  icon: <FaRobot />,
+                },
               ]}
             />
 
-            {/* Logout Button */}
+            {/* Logout */}
             <button
               onClick={logout}
               className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md transition transform hover:scale-105"
@@ -92,7 +107,12 @@ export default function Dashboard() {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="apiCalls" stroke="#6366F1" strokeWidth={3} />
+              <Line
+                type="monotone"
+                dataKey="apiCalls"
+                stroke="#6366F1"
+                strokeWidth={3}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

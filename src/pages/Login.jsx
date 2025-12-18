@@ -21,7 +21,7 @@ export default function Login() {
 
     try {
       // ⬇⬇⬇ MUST SEND withCredentials for cookie
-      console.log("Login payload:", { email, password });
+      "Login payload:", { email, password };
       const res = await api.post(
         "/api/users/login/",
         {

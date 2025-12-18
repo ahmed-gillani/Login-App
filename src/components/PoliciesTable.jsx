@@ -14,11 +14,9 @@ export default function PoliciesTable() {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching policies...");
       const res = await api.get("/api/policies/");
       const data = res.data;
 
-      console.log("API data:", data); // debug
 
       // Handle both plain array and paginated object
       const dataArray = Array.isArray(data) ? data : data.results ?? [];
@@ -33,7 +31,6 @@ export default function PoliciesTable() {
     } catch (err) {
       console.error("Full error object:", err);
       if (err?.response) {
-        console.log("Error response data:", err.response.data);
         setError(
           `HTTP ${err.response.status} - ${err.response.statusText || ""} - Check if /api/policies/ exists`
         );
@@ -46,7 +43,6 @@ export default function PoliciesTable() {
     }
   };
 
-  // Automatically fetch policies on mount (React 18 safe)
   useEffect(() => {
     if (!didFetch.current) {
       fetchPolicies();

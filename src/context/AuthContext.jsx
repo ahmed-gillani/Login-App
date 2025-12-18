@@ -9,10 +9,9 @@ export default function AuthProvider({ children }) {
     JSON.parse(localStorage.getItem("user")) || null
   );
 
+  // ✅ Single source of truth for logout
   const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
+    localStorage.clear();        // clear all auth-related data
     setUser(null);
     window.location.href = "/login";
   };
@@ -20,18 +19,15 @@ export default function AuthProvider({ children }) {
   const refreshToken = async () => {
     try {
       const refresh = localStorage.getItem("refresh_token");
+
       if (!refresh) {
         logout();
         return null;
       }
 
-      console.log("[refreshToken] Sending refresh:", refresh);
-
       const res = await api.post("/api/users/refresh/", {
-        refresh: refresh,      // ✅ your backend requires this
+        refresh: refresh,
       });
-
-      console.log("[refreshToken] Response:", res.data);
 
       if (res?.data?.access) {
         localStorage.setItem("access_token", res.data.access);
@@ -52,16 +48,17 @@ export default function AuthProvider({ children }) {
       async (error) => {
         const original = error.config;
 
-        if (!original || original._retry) return Promise.reject(error);
+        if (!original || original._retry) {
+          return Promise.reject(error);
+        }
 
         if (error.response?.status === 401) {
-          console.log("401 detected — refreshing access token...");
           original._retry = true;
 
           const newAccess = await refreshToken();
           if (newAccess) {
             original.headers = original.headers || {};
-            original.headers["Authorization"] = `Bearer ${newAccess}`;
+            original.headers.Authorization = `Bearer ${newAccess}`;
             return api(original);
           }
         }
