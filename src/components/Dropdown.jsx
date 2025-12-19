@@ -25,7 +25,7 @@ export default function Dropdown({ label = "Menu", items = [], icon }) {
           flex items-center justify-between
           px-4
           rounded-lg
-          bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500
+          bg-linear-to-r from-indigo-600 via-purple-600 to-pink-500
           text-white font-semibold
           shadow
           hover:scale-105

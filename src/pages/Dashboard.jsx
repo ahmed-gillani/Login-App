@@ -25,6 +25,7 @@ export default function Dashboard() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // Data for main chart
   const data = [
     { name: "Jan", apiCalls: 30 },
     { name: "Feb", apiCalls: 45 },
@@ -34,9 +35,20 @@ export default function Dashboard() {
     { name: "Jun", apiCalls: 90 },
   ];
 
+  // Data for mini sparkline charts in stat cards
+  const sparkData = [
+    { value: 20 },
+    { value: 35 },
+    { value: 25 },
+    { value: 40 },
+    { value: 30 },
+    { value: 45 },
+    { value: 50 },
+  ];
+
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-slate-200 to-blue-200">
         <p className="text-gray-600 text-lg">
           Loading user... If this persists, please login again.
         </p>
@@ -45,16 +57,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-indigo-600 via-purple-600 to-pink-500 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-slate-200 to-blue-200 p-6">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-4xl font-extrabold text-white mb-2">
+            <h1 className="text-4xl font-extrabold text-gray-900 mb-1">
               Welcome, {user.first_name}!
             </h1>
-            <p className="text-indigo-200 text-lg">
+            <p className="text-gray-600 text-lg">
               Facility Management Dashboard
             </p>
           </div>
@@ -89,15 +101,39 @@ export default function Dashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard icon={<FaUser />} label="Username" value={user.username} color="indigo" />
-          <StatCard icon={<FaBuilding />} label="Facility" value={user.facility?.name} color="purple" />
-          <StatCard icon={<FaUserShield />} label="Role" value={user.role?.name} color="pink" />
-          <StatCard icon={<FaChartLine />} label="Email" value={user.email} color="green" />
+          <StatCard
+            icon={<FaUser />}
+            label="Username"
+            value={user.username}
+            color="blue"
+            sparkData={sparkData}
+          />
+          <StatCard
+            icon={<FaBuilding />}
+            label="Facility"
+            value={user.facility?.name}
+            color="indigo"
+            sparkData={sparkData}
+          />
+          <StatCard
+            icon={<FaUserShield />}
+            label="Role"
+            value={user.role?.name}
+            color="cyan"
+            sparkData={sparkData}
+          />
+          <StatCard
+            icon={<FaChartLine />}
+            label="Email"
+            value={user.email}
+            color="green"
+            sparkData={sparkData}
+          />
         </div>
 
-        {/* Chart */}
-        <div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        {/* Main Chart */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
             API Calls Over Time
           </h2>
 
@@ -110,25 +146,45 @@ export default function Dashboard() {
               <Line
                 type="monotone"
                 dataKey="apiCalls"
-                stroke="#6366F1"
+                stroke="#2563EB"
                 strokeWidth={3}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
-
       </div>
     </div>
   );
 }
 
-function StatCard({ icon, label, value, color }) {
+// -----------------------
+// Animated Stat Card with Sparkline
+// -----------------------
+function StatCard({ icon, label, value, color, sparkData }) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 flex items-center gap-4">
-      <div className={`w-10 h-10 text-${color}-500`}>{icon}</div>
-      <div>
-        <p className="text-gray-500">{label}</p>
-        <p className="text-gray-900 font-bold">{value}</p>
+    <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-3
+      hover:shadow-xl hover:scale-105 transition-transform duration-300">
+      <div className="flex items-center gap-3">
+        <div className={`text-${color}-500 w-10 h-10 flex items-center justify-center text-xl`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-gray-500 text-sm">{label}</p>
+          <p className="text-gray-900 font-semibold">{value}</p>
+        </div>
+      </div>
+      <div className="h-10">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={sparkData}>
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke={`var(--tw-${color}-500)`}
+              strokeWidth={2}
+              dot={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

@@ -52,7 +52,6 @@ export const sendChatMessage = async (message, onStreamChunk) => {
 
     return { answer: fullText };
   } catch (error) {
-    console.error("Chat API Error:", error);
     throw error;
   }
 };

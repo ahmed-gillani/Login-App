@@ -69,7 +69,7 @@ export default function Sidebar({
         {/* Top Header */}
         <div className="flex items-center justify-between p-4 border-b dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 text-white flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-lg bg-linear-to-br from-sky-500 to-blue-600 text-white flex items-center justify-center font-bold">
               AI
             </div>
             <span className="font-semibold text-slate-800 dark:text-slate-100 text-lg">

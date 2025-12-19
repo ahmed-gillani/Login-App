@@ -36,7 +36,6 @@ export default function AuthProvider({ children }) {
 
       return null;
     } catch (err) {
-      console.error("[refreshToken ERROR]:", err?.response?.data || err);
       logout();
       return null;
     }

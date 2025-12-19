@@ -29,7 +29,6 @@ export default function PoliciesTable() {
 
       setPolicies(trimmed);
     } catch (err) {
-      console.error("Full error object:", err);
       if (err?.response) {
         setError(
           `HTTP ${err.response.status} - ${err.response.statusText || ""} - Check if /api/policies/ exists`
