@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
-export const sendChatMessage = async (message, onStreamChunk) => {
+// API call for sending chat messages
+export const sendChatMessage = async ({ message, onStreamChunk }) => {
   const response = await fetch(
     "https://dev.ai.api.connecxguard.com/chatbot",
     {
@@ -39,13 +40,17 @@ export const sendChatMessage = async (message, onStreamChunk) => {
       const data = line.replace("data:", "").trim();
       if (!data || data === "[DONE]") continue;
 
+      // Format dashes
       if (data === "-") {
         if (fullText && !fullText.endsWith("\n")) fullText += "\n";
         fullText += "- ";
       } else {
-        if (fullText && !fullText.endsWith(" ") && !fullText.endsWith("\n")) fullText += " ";
+        if (fullText && !fullText.endsWith(" ") && !fullText.endsWith("\n")) {
+          fullText += " ";
+        }
         fullText += data;
       }
+
       onStreamChunk?.(fullText);
     }
   }
@@ -53,9 +58,12 @@ export const sendChatMessage = async (message, onStreamChunk) => {
   return { answer: fullText };
 };
 
+// Custom hook using TanStack useMutation
 export const useSendChatMessage = () => {
   return useMutation({
-    mutationFn: ({ message, onStreamChunk }) =>
-      sendChatMessage(message, onStreamChunk),
+    mutationFn: sendChatMessage,
+    onError: (err) => {
+      console.error("Chat mutation error:", err);
+    },
   });
 };

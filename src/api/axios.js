@@ -4,7 +4,7 @@ import axios from "axios";
 const FACILITY_ID = "t2y4sv_0954198_YRPC0QP";
 
 const api = axios.create({
-  baseURL: "https://3-149-121-205.nip.io",
+  baseURL: "https://dev.api.connecxguard.com",
   timeout: 15000,
   withCredentials: true,
   headers: {
@@ -13,15 +13,13 @@ const api = axios.create({
   },
 });
 
-// Auto-add Bearer token if present
+// Auto-add Bearer token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   config.headers["X-Facility-Id"] = FACILITY_ID;
-
   return config;
 });
 

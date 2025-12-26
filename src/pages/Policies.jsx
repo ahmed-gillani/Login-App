@@ -1,7 +1,6 @@
-// src/pages/Policies.jsx
 import React from "react";
-import PoliciesTable from "../components/PoliciesTable";
 import { useNavigate } from "react-router-dom";
+import PoliciesTable from "../components/PoliciesTable";
 
 export default function Policies() {
   const navigate = useNavigate();
@@ -12,7 +11,6 @@ export default function Policies() {
 
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Policies</h1>
-
           <button
             onClick={() => navigate("/dashboard")}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"

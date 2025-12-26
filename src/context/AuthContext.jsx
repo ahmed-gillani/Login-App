@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect } from "react";
 import api from "../api/axios";
 
@@ -9,9 +8,8 @@ export default function AuthProvider({ children }) {
     JSON.parse(localStorage.getItem("user")) || null
   );
 
-  // ✅ Single source of truth for logout
   const logout = () => {
-    localStorage.clear();        // clear all auth-related data
+    localStorage.clear();
     setUser(null);
     window.location.href = "/login";
   };
@@ -19,21 +17,13 @@ export default function AuthProvider({ children }) {
   const refreshToken = async () => {
     try {
       const refresh = localStorage.getItem("refresh_token");
+      if (!refresh) return logout();
 
-      if (!refresh) {
-        logout();
-        return null;
-      }
-
-      const res = await api.post("/api/users/refresh/", {
-        refresh: refresh,
-      });
-
+      const res = await api.post("/api/users/refresh/", { refresh });
       if (res?.data?.access) {
         localStorage.setItem("access_token", res.data.access);
         return res.data.access;
       }
-
       return null;
     } catch (err) {
       logout();
@@ -46,14 +36,10 @@ export default function AuthProvider({ children }) {
       (response) => response,
       async (error) => {
         const original = error.config;
-
-        if (!original || original._retry) {
-          return Promise.reject(error);
-        }
+        if (!original || original._retry) return Promise.reject(error);
 
         if (error.response?.status === 401) {
           original._retry = true;
-
           const newAccess = await refreshToken();
           if (newAccess) {
             original.headers = original.headers || {};
@@ -61,7 +47,6 @@ export default function AuthProvider({ children }) {
             return api(original);
           }
         }
-
         return Promise.reject(error);
       }
     );

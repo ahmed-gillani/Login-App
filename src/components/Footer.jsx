@@ -1,4 +1,4 @@
-// src/components/Footer.jsx
+//src/components/Footer.jsx
 import React, { useRef, useState, useEffect } from "react";
 import { Send, Loader2 } from "lucide-react";
 
@@ -54,7 +54,9 @@ export default function Footer({ onSend, isStreaming }) {
             </button>
           </div>
 
-          <p className="mt-2 text-xs text-center text-slate-500">ChatGPT may produce inaccurate information — verify important details.</p>
+          <p className="mt-2 text-xs text-center text-slate-500">
+            ChatGPT may produce inaccurate information — verify important details.
+          </p>
         </div>
       </div>
     </div>

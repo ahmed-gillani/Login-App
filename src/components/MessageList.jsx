@@ -6,7 +6,7 @@ export default function MessageList({ messages = [], isThinking = false }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
 
   return (
@@ -15,13 +15,20 @@ export default function MessageList({ messages = [], isThinking = false }) {
         {messages.length === 0 && !isThinking && (
           <div className="mt-20 text-center text-slate-500">
             <h3 className="text-lg font-medium">Welcome to Chat</h3>
-            <p className="mt-2 text-sm">Ask anything — this chat is powered by your app.</p>
+            <p className="mt-2 text-sm">
+              Ask anything — this chat is powered by your app.
+            </p>
           </div>
         )}
 
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-2">
           {messages.map((m) => (
-            <Message key={m.id} role={m.role} content={m.text ?? m.content ?? ""} />
+            <Message
+              key={m.id}
+              role={m.role}
+              content={m.text}
+              isThinking={isThinking && m.role === "assistant"}
+            />
           ))}
 
           <div ref={bottomRef} />

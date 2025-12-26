@@ -11,14 +11,12 @@ export function saveChats(chats) {
 export function createChat() {
   const chats = getChats();
   const id = Date.now().toString();
-
   chats[id] = {
     id,
     title: "New Chat",
     messages: [],
     createdAt: Date.now(),
   };
-
   saveChats(chats);
   return id;
 }
