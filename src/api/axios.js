@@ -14,13 +14,23 @@ const api = axios.create({
 });
 
 // Auto-add Bearer token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  config.headers["X-Facility-Id"] = FACILITY_ID;
-  return config;
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+
+    if (token) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+
+    // Always ensure Facility ID is present
+    config.headers["X-Facility-Id"] = FACILITY_ID;
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default api;

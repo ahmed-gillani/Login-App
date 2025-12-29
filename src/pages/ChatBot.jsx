@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; 
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
@@ -18,31 +18,27 @@ export default function ChatBot() {
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
 
+  const botMsgRef = useRef("");
   const { mutateAsync: sendMessage } = useSendChatMessage();
 
-  // Load conversations and active chat
   useEffect(() => {
     const chats = getChats();
-
     if (!id) {
       const ids = Object.keys(chats);
       const newId = ids.length ? ids[0] : createChat();
       navigate(`/chatbot/${newId}`, { replace: true });
       return;
     }
-
     if (!chats[id]) {
       const newId = createChat();
       navigate(`/chatbot/${newId}`, { replace: true });
       return;
     }
-
     setActiveId(id);
     setMessages(chats[id].messages || []);
     setConversations(Object.values(chats).filter(c => c?.id));
   }, [id, navigate]);
 
-  // Send a new message
   const handleSend = async (text) => {
     if (!activeId || !text) return;
 
@@ -52,35 +48,34 @@ export default function ChatBot() {
 
     const userMsg = { id: Date.now(), role: "user", text };
     chat.messages.push(userMsg);
-
     if (chat.messages.length === 1) chat.title = generateChatTitle(text);
     updateChat(activeId, chat);
     setMessages([...chat.messages]);
     setIsThinking(true);
 
     const botId = Date.now() + 1;
+    botMsgRef.current = "";
 
     try {
       await sendMessage({
         message: text,
         onStreamChunk: (chunk) => {
-          try {
-            const chats = getChats();
-            const chat = chats[activeId];
-            if (!chat) return;
+          botMsgRef.current += (botMsgRef.current ? " " : "") + chunk;
+          const fixedText = cleanText(botMsgRef.current);
 
-            let botMsg = chat.messages.find((m) => m.id === botId);
-            if (!botMsg) {
-              botMsg = { id: botId, role: "assistant", text: "" };
-              chat.messages.push(botMsg);
-            }
+          const chats = getChats();
+          const chat = chats[activeId];
+          if (!chat) return;
 
-            botMsg.text = cleanText(chunk);
-            updateChat(activeId, chat);
-            setMessages([...chat.messages]);
-          } catch (err) {
-            console.error("Error updating bot message:", err);
+          let botMsg = chat.messages.find(m => m.id === botId);
+          if (!botMsg) {
+            botMsg = { id: botId, role: "assistant", text: "" };
+            chat.messages.push(botMsg);
           }
+
+          botMsg.text = fixedText;
+          updateChat(activeId, chat);
+          setMessages([...chat.messages]);
         },
       });
     } catch (err) {
@@ -90,13 +85,11 @@ export default function ChatBot() {
     }
   };
 
-  // Create new chat
   const handleNewChat = () => {
     const newId = createChat();
     navigate(`/chatbot/${newId}`);
   };
 
-  // Delete chat
   const handleDelete = (cid) => {
     deleteChat(cid);
     const chats = getChats();
