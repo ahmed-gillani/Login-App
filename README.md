@@ -31,11 +31,10 @@ This project is a React‑based login interface that:
 This project communicates with the following APIs:
 
 ### 🤖 Chatbot API  
-https://3-133-101-97.nip.io/chatbot"
+"connecxguardhttps://dev.ai.api..com/chatbot"
 
 ## Login API
-"https://3-149-121-205.nip.io"
-
+"connecxguardhttps://dev.ai.api..com"
 
 
 These are used for:
