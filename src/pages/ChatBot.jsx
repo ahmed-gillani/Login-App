@@ -6,7 +6,7 @@ import MessageList from "../components/MessageList";
 import Footer from "../components/Footer";
 import { useSendChatMessage } from "../hooks/useChat";
 import { getChats, createChat, updateChat, deleteChat } from "../utils/chatStorage";
-import { processChunk } from "../utils/processChunk"; // Tumhara code
+import { processChunk } from "../utils/processChunk";
 
 export default function ChatBot() {
   const { id } = useParams();
@@ -16,8 +16,8 @@ export default function ChatBot() {
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
 
-  const botMsgRef = useRef(""); // Current assistant message
-  const chunkBuffer = useRef(""); // For partial chunks if needed
+  const botMsgRef = useRef("");
+
   const { mutateAsync: sendMessage } = useSendChatMessage();
 
   useEffect(() => {
@@ -59,16 +59,14 @@ export default function ChatBot() {
 
     const botId = Date.now() + 1;
     botMsgRef.current = "";
-    chunkBuffer.current = "";
 
     try {
       await sendMessage({
         message: text.trim(),
         onStreamChunk: (rawChunk) => {
-          // Use tumhara processChunk to extract clean text
           processChunk(rawChunk, (cleanText) => {
-            // Smart space add — word breaking fix
-            if (botMsgRef.current && !/\s$/.test(botMsgRef.current) && !/^\s/.test(cleanText)) {
+            // Smart space add — word breaking maximum fix
+            if (botMsgRef.current && !botMsgRef.current.endsWith(" ") && !cleanText.startsWith(" ")) {
               botMsgRef.current += " ";
             }
             botMsgRef.current += cleanText;
@@ -83,9 +81,9 @@ export default function ChatBot() {
               currentChat.messages.push(botMsg);
             }
 
-            // Final text with proper spacing
+            // Final display text with spacing
             botMsg.text = botMsgRef.current
-              .replace(/\s*([.,:!?])\s*/g, "$1 ")  // punctuation ke baad space
+              .replace(/\s*([.,:!?])\s*/g, "$1 ")
               .replace(/\s+/g, " ")
               .trim();
 
