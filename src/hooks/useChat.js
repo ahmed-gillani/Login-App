@@ -1,10 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 
-/**
- * Sends a chat message to the API and streams the response.
- * @param {string} message - The user message to send.
- * @param {(chunk: string) => void} onStreamChunk - Callback for each chunk of streamed data.
- */
 export const sendChatMessage = async ({ message, onStreamChunk }) => {
   const response = await fetch("https://dev.ai.api.connecxguard.com/chatbot", {
     method: "POST",
@@ -36,18 +31,13 @@ export const sendChatMessage = async ({ message, onStreamChunk }) => {
 
     for (const line of lines) {
       if (!line.startsWith("data:")) continue;
-
       const data = line.replace("data:", "").trim();
       if (!data || data === "[DONE]") continue;
-
       onStreamChunk?.(data);
     }
   }
 };
 
-/**
- * Custom hook for sending chat messages.
- */
 export const useSendChatMessage = () => {
   return useMutation({
     mutationFn: sendChatMessage,

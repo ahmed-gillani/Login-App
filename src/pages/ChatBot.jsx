@@ -6,19 +6,18 @@ import MessageList from "../components/MessageList";
 import Footer from "../components/Footer";
 import { useSendChatMessage } from "../hooks/useChat";
 import { getChats, createChat, updateChat, deleteChat } from "../utils/chatStorage";
-import { generateChatTitle } from "../utils/chatTitle";
-import { cleanText } from "../utils/cleanText";
+import { processChunk } from "../utils/processChunk"; // Tumhara code
 
 export default function ChatBot() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
 
-  const botMsgRef = useRef("");
+  const botMsgRef = useRef(""); // Current assistant message
+  const chunkBuffer = useRef(""); // For partial chunks if needed
   const { mutateAsync: sendMessage } = useSendChatMessage();
 
   useEffect(() => {
@@ -40,42 +39,59 @@ export default function ChatBot() {
   }, [id, navigate]);
 
   const handleSend = async (text) => {
-    if (!activeId || !text) return;
+    if (!activeId || !text.trim()) return;
 
     const chats = getChats();
     const chat = chats[activeId];
     if (!chat) return;
 
-    const userMsg = { id: Date.now(), role: "user", text };
+    const userMsg = { id: Date.now(), role: "user", text: text.trim() };
     chat.messages.push(userMsg);
-    if (chat.messages.length === 1) chat.title = generateChatTitle(text);
+
+    if (chat.messages.length === 1) {
+      const words = text.trim().split(/\s+/).slice(0, 5).join(" ");
+      chat.title = words ? words.charAt(0).toUpperCase() + words.slice(1) : "New Chat";
+    }
+
     updateChat(activeId, chat);
     setMessages([...chat.messages]);
     setIsThinking(true);
 
     const botId = Date.now() + 1;
     botMsgRef.current = "";
+    chunkBuffer.current = "";
 
     try {
       await sendMessage({
-        message: text,
-        onStreamChunk: (chunk) => {
-          botMsgRef.current += (botMsgRef.current ? " " : "") + chunk;
-          const fixedText = cleanText(botMsgRef.current);
+        message: text.trim(),
+        onStreamChunk: (rawChunk) => {
+          // Use tumhara processChunk to extract clean text
+          processChunk(rawChunk, (cleanText) => {
+            // Smart space add — word breaking fix
+            if (botMsgRef.current && !/\s$/.test(botMsgRef.current) && !/^\s/.test(cleanText)) {
+              botMsgRef.current += " ";
+            }
+            botMsgRef.current += cleanText;
 
-          const chats = getChats();
-          const chat = chats[activeId];
-          if (!chat) return;
+            const currentChats = getChats();
+            const currentChat = currentChats[activeId];
+            if (!currentChat) return;
 
-          let botMsg = chat.messages.find(m => m.id === botId);
-          if (!botMsg) {
-            botMsg = { id: botId, role: "assistant", text: "" };
-            chat.messages.push(botMsg);
-          }
+            let botMsg = currentChat.messages.find(m => m.id === botId);
+            if (!botMsg) {
+              botMsg = { id: botId, role: "assistant", text: "" };
+              currentChat.messages.push(botMsg);
+            }
 
-          botMsg.text = fixedText;
-          updateChat(activeId, chat);
-          setMessages([...chat.messages]);
+            // Final text with proper spacing
+            botMsg.text = botMsgRef.current
+              .replace(/\s*([.,:!?])\s*/g, "$1 ")  // punctuation ke baad space
+              .replace(/\s+/g, " ")
+              .trim();
+
+            updateChat(activeId, currentChat);
+            setMessages([...currentChat.messages]);
+          });
         },
       });
     } catch (err) {
@@ -110,9 +126,8 @@ export default function ChatBot() {
         onNewChat={handleNewChat}
         onDelete={handleDelete}
       />
-
       <div className="flex flex-col flex-1">
-        <Header title={conversations.find(c => c.id === activeId)?.title} />
+        <Header title={conversations.find(c => c.id === activeId)?.title || "New Chat"} />
         <MessageList messages={messages} isThinking={isThinking} />
         <Footer onSend={handleSend} isStreaming={isThinking} />
       </div>

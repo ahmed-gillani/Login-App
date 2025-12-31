@@ -4,11 +4,13 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    include: ['react-typed'],  // ← Yeh line add karo! Yeh Vite ko force karega react-typed ko sahi se load karne ke liye
+  },
   server: {
     proxy: {
-      // Proxy all /api requests to your backend
       "/api": {
-        target: "https://3-149-121-205.nip.io",
+        target: "https://dev.api.connecxguard.com",
         changeOrigin: true,
         secure: false,
       },

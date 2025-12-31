@@ -1,37 +1,122 @@
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { ReactTyped } from "react-typed";
 import { Copy, Check } from "lucide-react";
 import userAvatar from "../assets/user.gif";
 import gptAvatar from "../assets/gpt.gif";
+import { useMessageDetails } from "../hooks/useMessage"; // New hook
 
-export default function Message({ role, content, isThinking = false }) {
+export default function Message({ role, content, isThinking = false, isLastAssistant = false, messageId }) {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
-  const [displayText, setDisplayText] = useState(content);
+  const [displayText, setDisplayText] = useState("");
+  const [typedBulletIndex, setTypedBulletIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
 
-  // Typing effect for assistant
+  // Optional TanStack use in Message.jsx for fetching extra details
+  const { data: messageDetails, isLoading: detailsLoading } = useMessageDetails(messageId);
+
   useEffect(() => {
+    if (isLastAssistant && isThinking) {
+      setIsTyping(true);
+      setTypedBulletIndex(0);
+      setDisplayText("");
+    } else {
+      setDisplayText(content || "");
+      setIsTyping(false);
+    }
+  }, [isThinking, isLastAssistant, content]);
+
+  const processTextWithBoldQuotes = (text) => {
+    return text.replace(/"([^"]*)"/g, "**$1**");
+  };
+
+  const renderMessageContent = () => {
+    const fullText = displayText || content || "";
+
+    if (detailsLoading) return <p>Loading extra details...</p>; // Optional
+
+    // Use messageDetails if needed (e.g., add metadata)
+    const enhancedText = messageDetails ? `${fullText} (Details: ${messageDetails.note})` : fullText;
+
     if (isUser) {
-      setDisplayText(content);
-      return;
+      return (
+        <div className="prose prose-slate max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {enhancedText}
+          </ReactMarkdown>
+        </div>
+      );
     }
 
-    let i = 0;
-    const interval = setInterval(() => {
-      setDisplayText(content.slice(0, i));
-      i++;
-      if (i > content.length) clearInterval(interval);
-    }, 15);
+    const bulletLines = enhancedText
+      .split(/\s*-\s+/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
-    return () => clearInterval(interval);
-  }, [content, isUser]);
+    return (
+      <div className="prose prose-slate max-w-none leading-relaxed text-slate-800 dark:text-slate-200">
+        {bulletLines.length > 1 ? (
+          <ul className="list-disc list-outside pl-8 space-y-4 my-6">
+            {bulletLines.map((line, i) => (
+              <li key={i} className="leading-relaxed">
+                {isLastAssistant && isTyping ? (
+                  i < typedBulletIndex ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {processTextWithBoldQuotes(line)}
+                    </ReactMarkdown>
+                  ) : i === typedBulletIndex ? (
+                    <ReactTyped
+                      strings={[processTextWithBoldQuotes(line)]}
+                      typeSpeed={5}
+                      backSpeed={0}
+                      loop={false}
+                      showCursor={false}
+                      onComplete={() => {
+                        if (i < bulletLines.length - 1) {
+                          setTypedBulletIndex(i + 1);
+                        }
+                      }}
+                    />
+                  ) : (
+                    ""
+                  )
+                ) : (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {processTextWithBoldQuotes(line)}
+                  </ReactMarkdown>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <>
+            {isLastAssistant && isTyping ? (
+              <ReactTyped
+                strings={[processTextWithBoldQuotes(enhancedText)]}
+                typeSpeed={5}
+                backSpeed={0}
+                loop={false}
+                showCursor={false}
+              />
+            ) : (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {processTextWithBoldQuotes(enhancedText)}
+              </ReactMarkdown>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(content || displayText);
       setCopied(true);
-      setTimeout(() => setCopied(false), 900);
-    } catch { }
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {}
   };
 
   return (
@@ -43,49 +128,22 @@ export default function Message({ role, content, isThinking = false }) {
             alt={isUser ? "You" : "Assistant"}
             className={`w-10 h-10 rounded-full object-cover ${!isUser && isThinking ? "animate-pulse" : ""}`}
           />
-          <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition bg-black text-white text-xs px-2 py-1 rounded">
-            {isUser ? "You" : "Assistant"}
-          </span>
         </div>
 
         <div className="flex-1">
           {!isUser && (
-            <div className="flex justify-end mb-1">
-              <button onClick={handleCopy} className="p-1 rounded hover:bg-slate-100 text-slate-500">
-                {copied ? <Check size={14} /> : <Copy size={14} />}
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={handleCopy}
+                className="p-1.5 rounded hover:bg-slate-100 text-slate-500 transition"
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
               </button>
             </div>
           )}
 
-          <div className={`prose prose-slate max-w-none leading-relaxed ${isUser ? "bg-slate-700 text-white px-4 py-2 rounded-xl max-w-sm ml-auto" : ""}`}>
-            <ReactMarkdown
-              components={{
-                ul({ children, className }) {
-                  return <ul className={`list-disc pl-6 space-y-2 ${className || ""}`}>{children}</ul>;
-                },
-                ol({ children, className }) {
-                  return <ol className={`list-decimal pl-6 space-y-2 ${className || ""}`}>{children}</ol>;
-                },
-                li({ children }) {
-                  return <li className="leading-relaxed">{children}</li>;
-                },
-                p({ children }) {
-                  return <p className="mb-2">{children}</p>; // smaller margin for better spacing
-                },
-                strong({ children }) {
-                  return <strong className="font-semibold">{children}</strong>;
-                },
-                em({ children }) {
-                  return <em className="italic">{children}</em>;
-                },
-                code({ children }) {
-                  return <code className="bg-slate-100 px-1 rounded">{children}</code>;
-                }
-              }}
-            >
-              {content}
-            </ReactMarkdown>
-
+          <div className={`px-6 py-5 rounded-2xl shadow-sm bg-white dark:bg-slate-800 ${isUser ? "max-w-md ml-auto" : "max-w-3xl"}`}>
+            {renderMessageContent()}
           </div>
         </div>
       </div>
