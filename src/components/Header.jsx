@@ -1,43 +1,92 @@
-//src/components/Header.jsx
+
+// src/components/Header.jsx
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, Share2, UserPlus, MoreVertical } from "lucide-react";
+import { ChevronLeft, Share2, UserPlus, MoreVertical, Edit3, RotateCcw, Trash2 } from "lucide-react";
 
-export default function Header() {
+export default function Header({ title = "Chatbot" }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [openMenu, setOpenMenu] = useState(false);
 
-  const showBack = location.pathname.startsWith("/chatbot");
+  const showBack = location.pathname.includes("/chatbot");
 
   return (
-    <header className="w-full relative">
-      <div className="flex items-center justify-between px-6 h-16 bg-white/70 dark:bg-slate-900/70 backdrop-blur border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-3">
+    <header className="w-full border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+      <div className="flex items-center justify-between px-6 h-16">
+
+        {/* Left: Back Button + Title */}
+        <div className="flex items-center gap-4">
           {showBack && (
             <button
               onClick={() => navigate("/dashboard")}
-              className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               aria-label="Back to dashboard"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={22} className="text-gray-600 dark:text-gray-400" />
             </button>
           )}
-          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Chatbot</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {title}
+          </h1>
         </div>
 
+        {/* Right: Action Buttons */}
         <div className="flex items-center gap-2 relative">
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Share chat"><Share2 size={18} /></button>
-          <button className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Add people"><UserPlus size={18} /></button>
-          <button onClick={() => setOpenMenu(p => !p)} className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="More options"><MoreVertical size={18} /></button>
+          <button
+            className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+            title="Share chat"
+            aria-label="Share"
+          >
+            <Share2 size={20} className="text-gray-600 dark:text-gray-400" />
+          </button>
 
-          {openMenu && (
-            <div className="absolute right-0 top-12 w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden z-50">
-              <button className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700">Rename chat</button>
-              <button className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700">Clear messages</button>
-              <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40">Delete chat</button>
-            </div>
-          )}
+          <button
+            className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+            title="Add people"
+            aria-label="Add people"
+          >
+            <UserPlus size={20} className="text-gray-600 dark:text-gray-400" />
+          </button>
+
+          {/* More Options Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setOpenMenu(!openMenu)}
+              className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              title="More options"
+              aria-label="More options"
+            >
+              <MoreVertical size={20} className="text-gray-600 dark:text-gray-400" />
+            </button>
+
+            {openMenu && (
+              <>
+                {/* Overlay to close menu when clicking outside */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setOpenMenu(false)}
+                />
+
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-12 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+                  <button className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                    <Edit3 size={16} />
+                    Rename chat
+                  </button>
+                  <button className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                    <RotateCcw size={16} />
+                    Clear messages
+                  </button>
+                  <hr className="border-gray-200 dark:border-gray-700" />
+                  <button className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition">
+                    <Trash2 size={16} />
+                    Delete chat
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

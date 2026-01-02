@@ -1,40 +1,23 @@
 // src/utils/processChunk.js
-export const processChunk = (chunk, onChunk) => {
-  try {
-    if (chunk.startsWith("data: ")) {
-      const jsonStr = chunk.substring(6);
-      if (jsonStr.trim() === "[DONE]") {
-        return;
-      }
 
-      try {
-        const parsed = JSON.parse(jsonStr);
-        if (parsed.data !== undefined) {
-          onChunk(parsed.data.toString());
-        } else if (typeof parsed === "number") {
-          onChunk(parsed.toString());
-        } else if (typeof parsed === "string") {
-          onChunk(parsed);
-        }
-      } catch (parseError) {
-        onChunk(jsonStr);
-      }
-    } else {
-      try {
-        const parsed = JSON.parse(chunk);
-        if (parsed.data !== undefined) {
-          onChunk(parsed.data.toString());
-        } else if (typeof parsed === "number") {
-          onChunk(parsed.toString());
-        } else if (typeof parsed === "string") {
-          onChunk(parsed);
-        }
-      } catch (parseError) {
-        onChunk(chunk);
-      }
-    }
-  } catch (error) {
-    console.warn("Error processing chunk:", error);
-    onChunk(chunk);
+/**
+ * Process raw streaming chunk.
+ * IMPORTANT: Do NOT trim here — backend tokens often have leading/trailing spaces.
+ * We keep everything as-is to preserve natural spacing.
+ */
+export const processChunk = (rawChunk, onChunk) => {
+  if (!rawChunk || typeof rawChunk !== "string") return;
+
+  let text = rawChunk;
+
+  // Only remove "data: " prefix, but keep any spaces after it
+  if (text.startsWith("data: ")) {
+    text = text.substring(6);  // Do NOT trim!
   }
+
+  // Ignore [DONE] or completely empty
+  if (!text || text === "[DONE]") return;
+
+  // Pass the exact token (with its spaces)
+  onChunk(text);
 };

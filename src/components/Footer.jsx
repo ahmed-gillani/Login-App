@@ -1,62 +1,56 @@
-//src/components/Footer.jsx
-import React, { useRef, useState, useEffect } from "react";
-import { Send, Loader2 } from "lucide-react";
 
-export default function Footer({ onSend, isStreaming }) {
+// src/components/Footer.jsx
+import React, { useRef, useState, useEffect } from "react";
+import { Send } from "lucide-react";
+
+export default function Footer({ onSend, isStreaming = false }) {
   const [text, setText] = useState("");
   const textareaRef = useRef(null);
 
-  // auto-resize
+  // Auto-resize (optional - keeps it clean)
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 160) + "px";
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
   }, [text]);
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      if (e.shiftKey) return; // allow newline
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
   const handleSend = () => {
-    if (!text.trim() || isStreaming) return;
-    onSend(text.trim());
+    const trimmed = text.trim();
+    if (!trimmed || isStreaming) return;
+    onSend(trimmed);
     setText("");
   };
 
   return (
-    <div className="p-4 bg-transparent border-t border-white/30">
-      <div className="mx-auto max-w-3xl">
-        <div className="relative">
-          <div className="flex items-end gap-3 bg-white/90 backdrop-blur rounded-3xl px-4 py-3 shadow-md border border-white/40">
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isStreaming ? "Assistant is typing..." : "Send a message... (Enter to send)"}
-              className="flex-1 min-h-[40px] max-h-[160px] resize-none bg-transparent outline-none text-sm leading-5 placeholder-slate-400"
-            />
-
-            <button
-              onClick={handleSend}
-              disabled={!text.trim() || isStreaming}
-              className={`ml-2 inline-flex items-center justify-center rounded-xl p-2 transition ${
-                !text.trim() || isStreaming ? "opacity-40 cursor-not-allowed" : "hover:bg-slate-100"
-              }`}
-              aria-label="Send"
-            >
-              {isStreaming ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-            </button>
-          </div>
-
-          <p className="mt-2 text-xs text-center text-slate-500">
-            ChatGPT may produce inaccurate information — verify important details.
-          </p>
+    <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Simple Input Bar - Exactly like your screenshot */}
+        <div className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-full px-6 py-4 shadow-sm">
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            placeholder="Send a message..."
+            className="flex-1 resize-none bg-transparent outline-none text-gray-700 dark:text-gray-300 placeholder-gray-400 text-base"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!text.trim() || isStreaming}
+            className="ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+          >
+            <Send size={22} />
+          </button>
         </div>
       </div>
     </div>

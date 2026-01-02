@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+// src/pages/ChatBot.jsx
+import React, { useEffect, useState, useRef } from "react";  
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
@@ -8,6 +9,7 @@ import { useSendChatMessage } from "../hooks/useChat";
 import { getChats, createChat, updateChat, deleteChat } from "../utils/chatStorage";
 import { processChunk } from "../utils/processChunk";
 
+
 export default function ChatBot() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,42 +17,69 @@ export default function ChatBot() {
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [chatTitle, setChatTitle] = useState("New Chat");
 
-  const botMsgRef = useRef("");
+  const fullResponse = useRef(""); // Raw accumulation
 
   const { mutateAsync: sendMessage } = useSendChatMessage();
 
   useEffect(() => {
     const chats = getChats();
-    if (!id) {
-      const ids = Object.keys(chats);
-      const newId = ids.length ? ids[0] : createChat();
-      navigate(`/chatbot/${newId}`, { replace: true });
-      return;
-    }
-    if (!chats[id]) {
+    if (!id || !chats[id]) {
       const newId = createChat();
       navigate(`/chatbot/${newId}`, { replace: true });
       return;
     }
     setActiveId(id);
-    setMessages(chats[id].messages || []);
-    setConversations(Object.values(chats).filter(c => c?.id));
+    const chat = chats[id];
+    setMessages(chat.messages || []);
+    setChatTitle(chat.title || "New Chat");
+    setConversations(Object.values(chats));
   }, [id, navigate]);
+
+  // const finalizeResponse = (text) => {
+  //   return text
+  //     .replace(/\s*-\s*/g, "- ")      // Ensure bullet has space after
+  //     .replace(/\s*\/\s*/g, "/")      // 24 / 7 → 24/7
+  //     .replace(/\(\s*/g, "( ")        // ( SN → ( SN
+  //     .replace(/\s*\)/g, " )")        // F ) →  )
+  //     .replace(/\s*,\s*/g, ", ")     // ,  → ,
+  //     .replace(/\s+/g, " ")          // Collapse all multiple spaces
+  //     .trim();
+  // };
+  const finalizeResponse = (text) => {
+  return text
+      .replace(/\.\s*-\s*/g, ".\n- ")
+          .replace(/^\s*-\s*/g, "- ")
+
+    // normalize spaces, but KEEP newlines
+    .replace(/[ \t]+/g, " ")
+
+    // fix spaces around punctuation safely
+    .replace(/\s*,\s*/g, ", ")
+    .replace(/\s*\(\s*/g, " (")
+    .replace(/\s*\)\s*/g, ") ")
+
+    // normalize excessive newlines
+    .replace(/\n{3,}/g, "\n\n")
+
+    .trim();
+};
+
 
   const handleSend = async (text) => {
     if (!activeId || !text.trim()) return;
 
     const chats = getChats();
     const chat = chats[activeId];
-    if (!chat) return;
 
     const userMsg = { id: Date.now(), role: "user", text: text.trim() };
     chat.messages.push(userMsg);
 
     if (chat.messages.length === 1) {
-      const words = text.trim().split(/\s+/).slice(0, 5).join(" ");
+      const words = text.trim().split(/\s+/).slice(0, 6).join(" ");
       chat.title = words ? words.charAt(0).toUpperCase() + words.slice(1) : "New Chat";
+      setChatTitle(chat.title);
     }
 
     updateChat(activeId, chat);
@@ -58,18 +87,14 @@ export default function ChatBot() {
     setIsThinking(true);
 
     const botId = Date.now() + 1;
-    botMsgRef.current = "";
+    fullResponse.current = "";
 
     try {
       await sendMessage({
         message: text.trim(),
         onStreamChunk: (rawChunk) => {
-          processChunk(rawChunk, (cleanText) => {
-            // Smart space add — word breaking maximum fix
-            if (botMsgRef.current && !botMsgRef.current.endsWith(" ") && !cleanText.startsWith(" ")) {
-              botMsgRef.current += " ";
-            }
-            botMsgRef.current += cleanText;
+          processChunk(rawChunk, (token) => {
+            fullResponse.current += token;  // Exact concat — preserves spaces!
 
             const currentChats = getChats();
             const currentChat = currentChats[activeId];
@@ -81,24 +106,46 @@ export default function ChatBot() {
               currentChat.messages.push(botMsg);
             }
 
-            // Final display text with spacing
-            botMsg.text = botMsgRef.current
-              .replace(/\s*([.,:!?])\s*/g, "$1 ")
-              .replace(/\s+/g, " ")
-              .trim();
+            // During streaming: light cleanup to avoid huge gaps
+            // botMsg.text = fullResponse.current.replace(/\s+/g, " ");
+            botMsg.text = fullResponse.current.replace(/[ \t]+/g, " ");
+
 
             updateChat(activeId, currentChat);
             setMessages([...currentChat.messages]);
           });
         },
+        onComplete: () => {
+          // Final perfect cleanup
+          const finalText = finalizeResponse(fullResponse.current);
+
+          const currentChats = getChats();
+          const currentChat = currentChats[activeId];
+          const botMsg = currentChat.messages.find(m => m.id === botId);
+          if (botMsg) {
+            botMsg.text = finalText;
+            updateChat(activeId, currentChat);
+            setMessages([...currentChat.messages]);
+          }
+          fullResponse.current = finalText;
+        },
       });
     } catch (err) {
-      console.error("Chat API error:", err);
+      console.error("Chat error:", err);
+      const errorMsg = { 
+        id: Date.now() + 2, 
+        role: "assistant", 
+        text: "Sorry, something went wrong. Please try again." 
+      };
+      chat.messages.push(errorMsg);
+      updateChat(activeId, chat);
+      setMessages([...chat.messages]);
     } finally {
       setIsThinking(false);
     }
   };
 
+  // ... rest of component (handleNewChat, handleDelete, return JSX) remains the same
   const handleNewChat = () => {
     const newId = createChat();
     navigate(`/chatbot/${newId}`);
@@ -112,11 +159,11 @@ export default function ChatBot() {
       const newId = ids.length ? ids[0] : createChat();
       navigate(`/chatbot/${newId}`, { replace: true });
     }
-    setConversations(Object.values(chats).filter(c => c?.id));
+    setConversations(Object.values(chats));
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar
         conversations={conversations}
         activeId={activeId}
@@ -125,8 +172,8 @@ export default function ChatBot() {
         onDelete={handleDelete}
       />
       <div className="flex flex-col flex-1">
-        <Header title={conversations.find(c => c.id === activeId)?.title || "New Chat"} />
-        <MessageList messages={messages} isThinking={isThinking} />
+        <Header title={chatTitle} />
+        <MessageList messages={messages} isThinking={isThinking} onSend={handleSend} />
         <Footer onSend={handleSend} isStreaming={isThinking} />
       </div>
     </div>

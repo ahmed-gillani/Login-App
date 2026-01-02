@@ -1,3 +1,4 @@
+
 // src/components/Dropdown.jsx
 import React, { useState, useRef, useEffect } from "react";
 
@@ -17,77 +18,59 @@ export default function Dropdown({ label = "Menu", items = [], icon }) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Dropdown button */}
+      {/* Main Button - Fixed gradient */}
       <button
         onClick={() => setOpen(!open)}
         className="
-          w-56 h-11
-          flex items-center justify-between
-          px-4
-          rounded-lg
-          bg-linear-to-r from-indigo-600 via-purple-600 to-pink-500
+          px-6 py-3
+          bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600
+          hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700
           text-white font-semibold
-          shadow
-          hover:scale-105
-          transition-transform
+          rounded-xl shadow-lg
+          transition-all duration-300 hover:shadow-xl hover:scale-105
+          flex items-center justify-between min-w-48
         "
       >
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-3">
           {icon && <span>{icon}</span>}
           {label}
         </span>
-
-        {/* Arrow */}
         <svg
-          className="h-4 w-4"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
+          className={`w-5 h-5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <path
-            fillRule="evenodd"
-            d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0l-4.24-4.24a.75.75 0 01.02-1.06z"
-            clipRule="evenodd"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
-      {/* Dropdown menu */}
+      {/* Dropdown Menu */}
       {open && (
-        <div
-          className="
-            absolute right-0 mt-2
-            w-56
-            bg-white
-            rounded-lg
-            shadow-lg
-            z-50
-            ring-1 ring-black ring-opacity-5
-          "
-        >
-          <ul className="py-1">
+        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+          <ul className="py-2">
             {items.map((item, index) => (
               <li
                 key={index}
                 onClick={() => {
-                  item.onClick && item.onClick();
+                  item.onClick?.();
                   setOpen(false);
                 }}
                 className="
-                  flex items-center gap-3
-                  px-4 py-2
-                  text-gray-800
-                  hover:bg-indigo-100
+                  flex items-center gap-4
+                  px-5 py-3
+                  text-gray-700 dark:text-gray-200
+                  hover:bg-indigo-50 dark:hover:bg-indigo-900/30
                   cursor-pointer
-                  transition
+                  transition-all duration-200
                 "
               >
                 {item.icon && (
-                  <span className="text-indigo-500">
+                  <span className="text-indigo-600 dark:text-indigo-400">
                     {item.icon}
                   </span>
                 )}
-                {item.label}
+                <span className="font-medium">{item.label}</span>
               </li>
             ))}
           </ul>

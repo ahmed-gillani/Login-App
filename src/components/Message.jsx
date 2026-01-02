@@ -1,21 +1,29 @@
+// src/components/Message.jsx
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ReactTyped } from "react-typed";
 import { Copy, Check } from "lucide-react";
-import userAvatar from "../assets/user.gif";
-import gptAvatar from "../assets/gpt.gif";
-import { useMessageDetails } from "../hooks/useMessage"; // New hook
+import { useMessageDetails } from "../hooks/useMessage";
 
-export default function Message({ role, content, isThinking = false, isLastAssistant = false, messageId }) {
+import userAvatar from "../assets/user-avatar.png";
+import botAvatar from "../assets/bot-avatar.png";
+
+export default function Message({
+  role,
+  content,
+  isThinking = false,
+  isLastAssistant = false,
+  messageId,
+  onSend, // For follow-up buttons
+}) {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const [typedBulletIndex, setTypedBulletIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Optional TanStack use in Message.jsx for fetching extra details
-  const { data: messageDetails, isLoading: detailsLoading } = useMessageDetails(messageId);
+  const { data: messageDetails } = useMessageDetails(messageId);
 
   useEffect(() => {
     if (isLastAssistant && isThinking) {
@@ -32,17 +40,40 @@ export default function Message({ role, content, isThinking = false, isLastAssis
     return text.replace(/"([^"]*)"/g, "**$1**");
   };
 
-  const renderMessageContent = () => {
-    const fullText = displayText || content || "";
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(content || displayText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {}
+  };
 
-    if (detailsLoading) return <p>Loading extra details...</p>; // Optional
+  const fullText = displayText || content || "";
+  const enhancedText = messageDetails
+    ? `${fullText}\n\n*(Note: ${messageDetails.note})*`
+    : fullText;
 
-    // Use messageDetails if needed (e.g., add metadata)
-    const enhancedText = messageDetails ? `${fullText} (Details: ${messageDetails.note})` : fullText;
+  const bulletLines = enhancedText
+    .split(/\n-\s+/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 
+  const currentTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const followUpSuggestions = [
+    "Tell me more",
+    "Give examples",
+    "Related policies",
+    "Simplify this",
+  ];
+
+  const renderContent = () => {
     if (isUser) {
       return (
-        <div className="prose prose-slate max-w-none">
+        <div className="leading-relaxed">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {enhancedText}
           </ReactMarkdown>
@@ -50,17 +81,13 @@ export default function Message({ role, content, isThinking = false, isLastAssis
       );
     }
 
-    const bulletLines = enhancedText
-      .split(/\s*-\s+/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-
-    return (
-      <div className="prose prose-slate max-w-none leading-relaxed text-slate-800 dark:text-slate-200">
-        {bulletLines.length > 1 ? (
-          <ul className="list-disc list-outside pl-8 space-y-4 my-6">
-            {bulletLines.map((line, i) => (
-              <li key={i} className="leading-relaxed">
+    if (bulletLines.length > 1) {
+      return (
+        <ul className="space-y-4 pl-1 my-4">
+          {bulletLines.map((line, i) => (
+            <li key={i} className="flex">
+              <span className="mr-3 text-blue-600 dark:text-blue-400 font-bold text-lg">•</span>
+              <div className="flex-1 leading-relaxed">
                 {isLastAssistant && isTyping ? (
                   i < typedBulletIndex ? (
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -69,83 +96,121 @@ export default function Message({ role, content, isThinking = false, isLastAssis
                   ) : i === typedBulletIndex ? (
                     <ReactTyped
                       strings={[processTextWithBoldQuotes(line)]}
-                      typeSpeed={5}
-                      backSpeed={0}
-                      loop={false}
-                      showCursor={false}
-                      onComplete={() => {
+                      typeSpeed={15}
+                      showCursor={true}
+                      cursorChar="▋"
+                      onStringTyped={() => {
                         if (i < bulletLines.length - 1) {
-                          setTypedBulletIndex(i + 1);
+                          setTimeout(() => setTypedBulletIndex(i + 1), 150);
                         }
                       }}
                     />
-                  ) : (
-                    ""
-                  )
+                  ) : null
                 ) : (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {processTextWithBoldQuotes(line)}
-                  </ReactMarkdown>
+                   </ReactMarkdown>
                 )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <>
-            {isLastAssistant && isTyping ? (
-              <ReactTyped
-                strings={[processTextWithBoldQuotes(enhancedText)]}
-                typeSpeed={5}
-                backSpeed={0}
-                loop={false}
-                showCursor={false}
-              />
-            ) : (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {processTextWithBoldQuotes(enhancedText)}
-              </ReactMarkdown>
-            )}
-          </>
-        )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    return isLastAssistant && isTyping ? (
+      <ReactTyped
+        strings={[processTextWithBoldQuotes(enhancedText)]}
+        typeSpeed={15}
+        showCursor={true}
+        cursorChar="▋"
+      />
+    ) : (
+      <div className="leading-relaxed">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {processTextWithBoldQuotes(enhancedText)}
+        </ReactMarkdown>
       </div>
     );
   };
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(content || displayText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (err) {}
-  };
-
   return (
-    <div className="w-full px-6 py-3">
-      <div className={`flex gap-4 items-start max-w-4xl ${isUser ? "ml-auto flex-row-reverse" : ""}`}>
-        <div className="relative group">
-          <img
-            src={isUser ? userAvatar : gptAvatar}
-            alt={isUser ? "You" : "Assistant"}
-            className={`w-10 h-10 rounded-full object-cover ${!isUser && isThinking ? "animate-pulse" : ""}`}
-          />
-        </div>
+    <div className="group py-6 px-4 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+      <div className={`flex gap-5 items-start max-w-4xl mx-auto ${isUser ? "justify-end" : "justify-start"}`}>
+        
+        {!isUser && (
+          <div className="flex-shrink-0">
+            <img
+              src={botAvatar}
+              alt="Assistant"
+              className={`w-11 h-11 rounded-full border-2 shadow-md border-gray-300 dark:border-gray-600 ${isThinking ? "animate-pulse" : ""}`}
+            />
+          </div>
+        )}
 
-        <div className="flex-1">
-          {!isUser && (
-            <div className="flex justify-end mb-2">
+        <div className={isUser ? "max-w-lg" : "flex-1 w-full max-w-3xl"}>
+          <div
+            className={`relative px-6 py-4 rounded-3xl shadow-lg inline-block ${
+              isUser
+                ? "bg-blue-600 text-white rounded-tr-none min-w-[80px]"
+                : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-tl-none w-full"
+            }`}
+          >
+            <div
+              className={`absolute top-0 w-4 h-4 transform ${
+                isUser
+                  ? "right-0 translate-x-1/2 -rotate-45 bg-blue-600"
+                  : "left-0 -translate-x-1/2 rotate-45 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700"
+              }`}
+              style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+            />
+
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              {renderContent()}
+            </div>
+
+            {/* Timestamp */}
+            <div className={`text-xs mt-3 ${isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"} opacity-70 text-right`}>
+              {currentTime}
+            </div>
+
+            {/* Follow-up Suggestions - Assistant only */}
+            {!isUser && !isThinking && (
+              <div className="mt-6 flex flex-wrap gap-3">
+                {followUpSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => onSend(suggestion)}
+                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Copy Button */}
+            {!isUser && !isThinking && (
               <button
                 onClick={handleCopy}
-                className="p-1.5 rounded hover:bg-slate-100 text-slate-500 transition"
+                className="absolute -top-10 right-2 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-700"
+                title="Copy message"
               >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} className="text-gray-600 dark:text-gray-400" />}
               </button>
-            </div>
-          )}
-
-          <div className={`px-6 py-5 rounded-2xl shadow-sm bg-white dark:bg-slate-800 ${isUser ? "max-w-md ml-auto" : "max-w-3xl"}`}>
-            {renderMessageContent()}
+            )}
           </div>
         </div>
+
+        {isUser && (
+          <div className="flex-shrink-0">
+            <img
+              src={userAvatar}
+              alt="You"
+              className="w-11 h-11 rounded-full border-2 shadow-md border-blue-500"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
