@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { fetchMessageDetails } from "../api/messageApi";
+import { fetchMessageDetails } from "../api/messageApi.ts";
 
 export interface MessageDetails {
   note?: string;
