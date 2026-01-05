@@ -1,7 +1,7 @@
 
 // src/components/MessageList.jsx
 import React, { useEffect, useRef } from "react";
-import Message from "./Message";
+import Message from "./Message.tsx";
 
 export default function MessageList({ messages = [], isThinking = false, onSend }) {
   const bottomRef = useRef(null);
