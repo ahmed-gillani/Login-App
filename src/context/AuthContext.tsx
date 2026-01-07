@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import api from "../api/axios";
+import api from "../api/axios.ts";
 
 // Define the User type (adjust fields based on your actual API response)
 export interface User {

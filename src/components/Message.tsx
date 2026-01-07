@@ -7,7 +7,6 @@ import { Copy, Check } from "lucide-react";
 
 import { useMessageDetails, MessageDetails } from "../hooks/useMessage.ts";
 
-// ✅ Correct Vite image imports using alias
 import userAvatar from "../assets/user-avatar.png";
 import botAvatar from "../assets/bot-avatar.png";
 /* -------------------- Types -------------------- */
@@ -65,7 +64,6 @@ const Message: React.FC<MessageProps> = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Silent fail
     }
   };
 
@@ -169,7 +167,7 @@ const Message: React.FC<MessageProps> = ({
         }`}
       >
         {!isUser && (
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <img
               src={botAvatar}
               alt="Assistant"

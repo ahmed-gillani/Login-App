@@ -1,0 +1,24 @@
+/**
+ * Process raw streaming chunk.
+ * IMPORTANT: Do NOT trim here — backend tokens often have leading/trailing spaces.
+ * We keep everything as-is to preserve natural spacing.
+ *
+ * @param rawChunk - The raw chunk of data received from the stream
+ * @param onChunk - Callback to handle each token
+ */
+export const processChunk = (rawChunk: unknown, onChunk: (token: string) => void): void => {
+  if (!rawChunk || typeof rawChunk !== "string") return;
+
+  let text = rawChunk;
+
+  // Only remove "data: " prefix, but keep any spaces after it
+  if (text.startsWith("data: ")) {
+    text = text.substring(6); // Do NOT trim!
+  }
+
+  // Ignore [DONE] or completely empty
+  if (!text || text === "[DONE]") return;
+
+  // Pass the exact token (with its spaces)
+  onChunk(text);
+};

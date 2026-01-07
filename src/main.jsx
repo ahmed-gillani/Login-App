@@ -1,19 +1,17 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import AuthProvider from "./context/AuthContext.tsx";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "../src/App.css"; // Tailwind + global styles
+// // src/main.tsx
+// import React from "react";
+// import ReactDOM from "react-dom/client";
+// import App from "./App.tsx";
+// import { QueryProvider } from "./providers/QueryProvider.tsx";
+// import AuthProvider from "./context/AuthContext.tsx";
+// import "./App.css"; // or index.css / main.css – your global styles + Tailwind
 
-// Create a QueryClient instance
-const queryClient = new QueryClient();
-
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </QueryClientProvider>
-  </React.StrictMode>
-);
+// ReactDOM.createRoot(document.getElementById("root")!).render(
+//   <React.StrictMode>
+//     <QueryProvider>
+//       <AuthProvider>
+//         <App />
+//       </AuthProvider>
+//     </QueryProvider>
+//   </React.StrictMode>
+// );
