@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
+import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard";
 import ChatBot from "./pages/ChatBot";
 import Policies from "./pages/Policies";
