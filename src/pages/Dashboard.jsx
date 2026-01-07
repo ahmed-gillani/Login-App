@@ -1,7 +1,7 @@
 
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.tsx";
 import { FaUser, FaBuilding, FaUserShield, FaEnvelope, FaRobot, FaHome } from "react-icons/fa";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Dropdown from "../components/Dropdown";

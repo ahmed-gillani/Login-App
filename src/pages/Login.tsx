@@ -1,8 +1,8 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { AuthContext } from "../context/AuthContext";
-import { useLogin } from "../hooks/useLogin";
+import { AuthContext } from "../context/AuthContext.tsx";
+import { useLogin } from "../hooks/useLogin.ts";
 
 // Define the expected shape of the user from your auth context
 interface User {
