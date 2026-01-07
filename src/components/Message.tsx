@@ -7,9 +7,9 @@ import { Copy, Check } from "lucide-react";
 
 import { useMessageDetails, MessageDetails } from "../hooks/useMessage.ts";
 
+// ✅ Correct Vite image imports using alias
 import userAvatar from "../assets/user-avatar.png";
 import botAvatar from "../assets/bot-avatar.png";
-
 /* -------------------- Types -------------------- */
 
 export type MessageRole = "user" | "assistant";
@@ -40,7 +40,6 @@ const Message: React.FC<MessageProps> = ({
   const [typedBulletIndex, setTypedBulletIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
 
-  // ✅ Type-safe usage of useMessageDetails hook
   const { data: messageDetails } = useMessageDetails(messageId);
 
   /* -------------------- Effects -------------------- */
@@ -66,7 +65,7 @@ const Message: React.FC<MessageProps> = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* silent */
+      // Silent fail
     }
   };
 
@@ -233,10 +232,7 @@ const Message: React.FC<MessageProps> = ({
                 {copied ? (
                   <Check size={16} className="text-green-600" />
                 ) : (
-                  <Copy
-                    size={16}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
+                  <Copy size={16} className="text-gray-600 dark:text-gray-400" />
                 )}
               </button>
             )}

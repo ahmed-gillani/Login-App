@@ -50,7 +50,7 @@ export default function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4
-      bg-gradient-to-br from-gray-100 via-slate-200 to-blue-200"
+      bg-linear-to-br from-gray-100 via-slate-200 to-blue-200"
     >
       <div
         className="w-full max-w-md bg-white/85 backdrop-blur-xl
@@ -131,7 +131,7 @@ export default function Login() {
             type="submit"
             disabled={isLoading}
             className="w-full flex items-center justify-center gap-2
-              bg-gradient-to-r from-blue-600 to-indigo-600
+              bg-linear-to-r from-blue-600 to-indigo-600
               text-white font-bold py-4 rounded-xl
               transition disabled:opacity-70"
           >
