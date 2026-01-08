@@ -9,47 +9,30 @@ export interface LoginVariables {
 export interface User {
   username: string;
   role?: string;
-  // add more fields later when backend returns them
 }
 
-export interface LoginResponse {
-  user: User;
-}
-
-export const loginUser = async (credentials: LoginVariables): Promise<LoginResponse> => {
+export const loginUser = async (credentials: LoginVariables) => {
   try {
     const response = await api.post("/api/users/login/", credentials);
+    const data = response.data;
 
-    console.log("Login Response:", response.data); // DEBUG: See what backend returns
-
-    // Store the access token if returned by the backend
-    // Try different possible token field names
-    const token = response.data?.access || response.data?.access_token || response.data?.token;
-    
+    // Token sirf tab save karo agar backend deta hai (tokens.access)
+    const token = data?.tokens?.access;
     if (token) {
       localStorage.setItem("access_token", token);
-      console.log("Token stored:", token); // DEBUG: Confirm token is stored
-    } else {
-      console.warn("No token found in login response:", response.data); // DEBUG: Warn if no token
     }
 
-    return {
-      user: {
-        username: credentials.username,
-      },
-    };
+    // User save karo (backend se aaye ya username se bana lo)
+    const user = data?.user || { username: credentials.username };
+    localStorage.setItem("user", JSON.stringify(user));
+
+    return { user };
   } catch (error: any) {
-    let errorMessage = "Invalid username or password";
+    const msg =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      "Invalid username or password";
 
-    if (error.response?.data) {
-      const data = error.response.data;
-      if (data.detail) errorMessage = data.detail;
-      else if (data.message) errorMessage = data.message;
-      else if (typeof data === "object") {
-        errorMessage = Object.values(data).flat().join(" ") || errorMessage;
-      }
-    }
-
-    throw new Error(errorMessage);
+    throw new Error(msg);
   }
 };
