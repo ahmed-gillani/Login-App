@@ -5,14 +5,6 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.tsx";
 import { useLogin } from "../hooks/useLogin.ts";
 
-interface User {
-  id?: number;
-  username: string;
-  email?: string;
-  role?: string;
-  [key: string]: any;
-}
-
 export default function Login() {
   const [username, setUsername] = useState<string>("admin");
   const [password, setPassword] = useState<string>("admin123");
@@ -30,6 +22,7 @@ export default function Login() {
       {
         onSuccess: (data) => {
           setUser(data.user);
+          localStorage.setItem("user", JSON.stringify(data.user));
           navigate("/dashboard");
         },
       }

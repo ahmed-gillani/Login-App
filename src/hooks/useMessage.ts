@@ -7,7 +7,8 @@ export interface MessageDetails {
 
 export const useMessageDetails = (
   messageId?: string | number
-): UseQueryResult<MessageDetails, unknown> => {
+):
+  UseQueryResult<MessageDetails, unknown> => {
   return useQuery<MessageDetails>({
     queryKey: ["message", messageId],
     queryFn: () => fetchMessageDetails(messageId!),

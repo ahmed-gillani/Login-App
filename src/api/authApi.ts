@@ -1,5 +1,5 @@
 // src/api/authApi.ts
-import api from './axios.ts';
+import api from "./axios.ts";
 
 export interface LoginVariables {
   username: string;
@@ -7,51 +7,49 @@ export interface LoginVariables {
 }
 
 export interface User {
-  id?: number;
   username: string;
-  email?: string;
   role?: string;
-  [key: string]: any;
-}
-
-export interface Tokens {
-  access: string;
-  refresh?: string;
+  // add more fields later when backend returns them
 }
 
 export interface LoginResponse {
   user: User;
-  tokens: Tokens;
-  message?: string;
-  detail?: string;
 }
 
 export const loginUser = async (credentials: LoginVariables): Promise<LoginResponse> => {
   try {
-    const response = await api.post<LoginResponse>('/api/users/login/', credentials);
-    const data = response.data;
+    const response = await api.post("/api/users/login/", credentials);
 
-    if (!data.tokens?.access) {
-      throw new Error('No access token received from server');
-    }
-    if (!data.user) {
-      throw new Error('No user data received from server');
+    console.log("Login Response:", response.data); // DEBUG: See what backend returns
+
+    // Store the access token if returned by the backend
+    // Try different possible token field names
+    const token = response.data?.access || response.data?.access_token || response.data?.token;
+    
+    if (token) {
+      localStorage.setItem("access_token", token);
+      console.log("Token stored:", token); // DEBUG: Confirm token is stored
+    } else {
+      console.warn("No token found in login response:", response.data); // DEBUG: Warn if no token
     }
 
-    return data;
+    return {
+      user: {
+        username: credentials.username,
+      },
+    };
   } catch (error: any) {
+    let errorMessage = "Invalid username or password";
+
     if (error.response?.data) {
-      const serverError = error.response.data;
-      if (serverError.detail) throw new Error(serverError.detail);
-      if (serverError.message) throw new Error(serverError.message);
-      if (typeof serverError === 'object') {
-        const messages = Object.values(serverError).flat().join(' ');
-        throw new Error(messages || 'Validation error');
+      const data = error.response.data;
+      if (data.detail) errorMessage = data.detail;
+      else if (data.message) errorMessage = data.message;
+      else if (typeof data === "object") {
+        errorMessage = Object.values(data).flat().join(" ") || errorMessage;
       }
     }
-    if (error.message === 'Network Error') {
-      throw new Error('Network error. Please check your connection.');
-    }
-    throw new Error(error.message || 'Login failed. Please try again.');
+
+    throw new Error(errorMessage);
   }
 };
