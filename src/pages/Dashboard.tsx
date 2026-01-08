@@ -63,7 +63,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <InfoCard icon={<FaUser size={24} />} label="Username" value={user.username || "N/A"} sparkData={sparkData} />
+          <InfoCard icon={<FaUser size={24} />} label="ame" value={user.username || "N/A"} sparkData={sparkData} />
           <InfoCard icon={<FaBuilding size={24} />} label="Facility" value={user.facility?.name || "N/A"} sparkData={sparkData} />
           <InfoCard icon={<FaUserShield size={24} />} label="Role" value={user.role?.name || "N/A"} sparkData={sparkData} />
           <InfoCard icon={<FaEnvelope size={24} />} label="Email" value={user.email || "N/A"} sparkData={sparkData} isEmail />
